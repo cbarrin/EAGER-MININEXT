@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="338e49b6-98f4-4eff-8f8a-ffc6ea5a0753" name="EAGER" url="http://localhost">
+        <fileTransfer host="192.168.0.101" port="22" rootFolder="/home/vagrant/EAGER" accessType="SFTP" username="vagrant">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>
