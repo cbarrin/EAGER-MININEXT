@@ -3,7 +3,7 @@
   <component name="WebServers">
     <option name="servers">
       <webServer id="338e49b6-98f4-4eff-8f8a-ffc6ea5a0753" name="EAGER" url="http://localhost">
-        <fileTransfer host="192.168.0.101" port="22" rootFolder="/home/vagrant/EAGER" accessType="SFTP" username="vagrant">
+        <fileTransfer host="192.168.0.101" port="22" rootFolder="/home/vagrant/EAGER" accessType="SFTP" password="dfdcdfcbdfcddfd8dfcbdfc4dfde" username="vagrant">
           <advancedOptions>
             <advancedOptions dataProtectionLevel="Private" />
           </advancedOptions>

@@ -22,6 +22,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
  
  ## Provisioning
 
+ config.vm.provision :shell, privileged: false, :path => "setup/java8-setup.sh"
  config.vm.provision :shell, privileged: false, :path => "setup/mininet-setup.sh"
  config.vm.provision :shell, privileged: false, :path => "setup/sdx-setup.sh"
 

@@ -14,6 +14,8 @@ git checkout 1.4.0
 sudo make install
 
 sudo pip install requests
+sudo pip install jprops
+sudo pip install pytest
 
 # Install SDX
 # Will be provided later
@@ -26,3 +28,11 @@ cd ~
 
 # Install ExaBGP
 sudo pip install -U exabgp
+
+# Install Java 8 and other tools
+sudo apt-get update -y
+sudo apt-get install -y software-properties-common python-software-properties
+sudo add-apt-repository -y ppa:webupd8team/java
+sudo apt-get update -y
+sudo apt-get install -y oracle-java8-installer
+sudo apt-get install -y ant
