@@ -5,14 +5,12 @@ from os import makedirs
 from os import path
 
 import jprops
+import mininet.log as log
 from mininet.moduledeps import pathCheck
 from mininet.node import Controller
-from mininext.cli import CLI
-from mininext.net import MiniNExT as Mininext
 
 
 class Floodlight(Controller):
-
     # Port numbers used to run Floodlight. These must be unique for every instance.
     # Static class variables are used to keep track of which ports have been used already.
     sync_manager_port = 6009
@@ -31,7 +29,6 @@ class Floodlight(Controller):
                  cargs='',
                  ip='127.0.0.1',
                  **kwargs):
-
         # Check to make sure Floodlight is installed before moving forward.
         installFloodlight()
 
@@ -39,6 +36,7 @@ class Floodlight(Controller):
         Floodlight.controller_number += 1
 
         # Initialize attributes
+        self.name = name
         self.properties_path = ''
         self.properties_file = ''
 
@@ -55,13 +53,18 @@ class Floodlight(Controller):
     def start(self):
         """Start <controller> <args> on controller.
            Log to /tmp/cN.log"""
-        print('Starting controller')
+        log.info('Starting controller...\n')
         pathCheck(self.command)
         cout = '/tmp/' + self.name + '.log'
         chdir(self.fl_root_dir)
         self.cmd(self.command + ' ' + self.cargs +
                  ' 1>' + cout + ' 2>' + cout + '&')
         self.execed = False
+
+    def stop(self):
+        log.debug('Removing ' + self.name + ' properties file...')
+        subprocess.call('rm ' + self.properties_path + self.properties_file, shell=True)
+        super(Floodlight, self).stop()
 
     def createUniqueFloodlightPropertiesFile(self):
         """
@@ -95,14 +98,15 @@ class Floodlight(Controller):
         with open(new_path + new_file) as fp:
             properties = jprops.load_properties(fp)
 
-            properties[[key for key, value in properties.items() if key.endswith('httpPort')][0]] = str(
-                Floodlight.http_port + 10)
-            properties[[key for key, value in properties.items() if key.endswith('httpsPort')][0]] = str(
-                Floodlight.https_port + 10)
-            properties[[key for key, value in properties.items() if key.endswith('openFlowPort')][0]] = str(
-                Floodlight.openflow_port + 10)
-            properties[[key for key, value in properties.items() if key.endswith('SyncManager.port')][0]] = str(
-                Floodlight.sync_manager_port + 10)
+            http = [key for key, value in properties.items() if key.endswith('httpPort')][0]
+            https = [key for key, value in properties.items() if key.endswith('httpsPort')][0]
+            openflow = [key for key, value in properties.items() if key.endswith('openFlowPort')][0]
+            syncmanager = [key for key, value in properties.items() if key.endswith('SyncManager.port')][0]
+
+            properties[http] = str(Floodlight.http_port + 10)
+            properties[https] = str(Floodlight.https_port + 10)
+            properties[openflow] = str(Floodlight.openflow_port + 10)
+            properties[syncmanager] = str(Floodlight.sync_manager_port + 10)
 
             # Update the class attributes so that everyone knows what ports are available now
             Floodlight.http_port += 10
@@ -110,10 +114,11 @@ class Floodlight(Controller):
             Floodlight.openflow_port += 10
             Floodlight.sync_manager_port += 10
 
-            # print [value for key, value in properties.items() if key.endswith('httpPort')][0]
-            # print [value for key, value in properties.items() if key.endswith('httpsPort')][0]
-            # print [value for key, value in properties.items() if key.endswith('openFlowPort')][0]
-            # print [value for key, value in properties.items() if key.endswith('SyncManager.port')][0]
+            log.debug('Ports being used in controller ' + self.name + ' property file...\n')
+            log.debug(http + ' = ' + properties[http] + '\n')
+            log.debug(https + ' = ' + properties[https] + '\n')
+            log.debug(openflow + ' = ' + properties[openflow] + '\n')
+            log.debug(syncmanager + ' = ' + properties[syncmanager] + '\n')
 
         # Write the updated ports to the new properties file
         with open(new_path + new_file, 'w') as fp:
@@ -127,10 +132,10 @@ def isFloodlightInstalled():
     :return: true or false
     """
     if not path.isdir('../floodlight'):
-        # print('Floodlight is not installed.')
+        log.debug('Floodlight is not installed.\n')
         return False
     else:
-        # print('Floodlight has been installed.')
+        log.debug('Floodlight has been installed.\n')
         return True
 
 
@@ -140,26 +145,14 @@ def installFloodlight():
     :return: none
     """
     if not isFloodlightInstalled():
-        print('Installing Floodlight...')
+        log.info('Installing Floodlight...\n')
         git_root_dir = subprocess.check_output('git rev-parse --show-toplevel', shell=True)
         git_root_dir = git_root_dir.strip()
         subprocess.call('git clone http://github.com/floodlight/floodlight ' + git_root_dir + '/floodlight', shell=True)
         chdir(git_root_dir + '/floodlight')
-        subprocess.call('sudo ant', shell=True)
+        subprocess.call('sudo mvn install', shell=True)
         chdir(git_root_dir)
 
 
-print('Testing...')
-
-net = Mininext(topo=None, build=False)
-
-for x in range(0, 20):
-    net.addController(name='c' + str(x), controller=Floodlight)
-
-net.build()
-
-for controller in net.controllers:
-    controller.start()
-
-CLI(net)
-net.stop()
+if __name__ == "__main__":
+    log.setLogLevel('info')
