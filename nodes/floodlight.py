@@ -66,6 +66,7 @@ class Floodlight(Controller):
         subprocess.call('rm ' + self.properties_path + self.properties_file, shell=True)
         super(Floodlight, self).stop()
 
+
     def createUniqueFloodlightPropertiesFile(self):
         """
         Creates a unique properties file for the particular Floodlight instance.
